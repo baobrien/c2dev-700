@@ -1,0 +1,576 @@
+fmfsk.c:    fmfsk->Rb = Rb;
+fmfsk.c:    fmfsk->Rs = Rb*2;
+fmfsk.c:    fmfsk->Fs = Fs;
+fmfsk.c:    fmfsk->Ts = Fs/fmfsk->Rs;
+fmfsk.c:    fmfsk->N = nbits*2*fmfsk->Ts;
+fmfsk.c:    fmfsk->nmem = fmfsk->N+(fmfsk->Ts*4);
+fmfsk.c:    fmfsk->nsym = nbits*2;
+fmfsk.c:    fmfsk->nbit = nbits;
+fmfsk.c:    fmfsk->lodd = 0;
+fmfsk.c:    fmfsk->nin = fmfsk->N;
+fmfsk.c:    float *oldsamps = malloc(sizeof(float)*fmfsk->nmem);
+fmfsk.c:    fmfsk->oldsamps = oldsamps;
+fmfsk.c:    fmfsk->stats = NULL;
+fmfsk.c:    free(fmfsk->oldsamps);
+fmfsk.c:    return (uint32_t)fmfsk->nin;
+fmfsk.c:    fmfsk->stats = stats;
+fmfsk.c:    int nbit = fmfsk->nbit;
+fmfsk.c:    int Ts = fmfsk->Ts;
+fmfsk.c:    int Ts          = fmfsk->Ts;
+fmfsk.c:    int Fs          = fmfsk->Fs;
+fmfsk.c:    int Rs          = fmfsk->Rs;
+fmfsk.c:    int nin         = fmfsk->nin;
+fmfsk.c:    int N           = fmfsk->N;
+fmfsk.c:    int nsym        = fmfsk->nsym;
+fmfsk.c:    int nbit        = fmfsk->nbit;
+fmfsk.c:    int nmem        = fmfsk->nmem;
+fmfsk.c:    float *oldsamps = fmfsk->oldsamps;
+fmfsk.c:    old_norm_rx_timing = fmfsk->norm_rx_timing;
+fmfsk.c:    fmfsk->norm_rx_timing = norm_rx_timing;
+fmfsk.c:        fmfsk->ppm = .9*fmfsk->ppm + .1*appm;
+fmfsk.c:    fmfsk->nin = next_nin;
+fmfsk.c:    lastv = fmfsk->lodd;
+fmfsk.c:    fmfsk->lodd = lastv;
+fmfsk.c:    if(fmfsk->stats != NULL){
+fmfsk.c:        fmfsk->stats->Nc = 0;
+fmfsk.c:        fmfsk->stats->nr = 0;
+fmfsk.c:        fmfsk->stats->clock_offset = fmfsk->ppm;
+fmfsk.c:        fmfsk->stats->rx_timing = (float)rx_timing;
+fmfsk.c:        fmfsk->stats->foff = 0;
+fmfsk.c:        fmfsk->stats->snr_est = 0;
+fmfsk.c:        neyesamp = fmfsk->stats->neyesamp = Ts*4;
+fmfsk.c:        fmfsk->stats->neyetr = 8;
+fmfsk.c:        for(k=0; k<fmfsk->stats->neyetr; k++)
+fmfsk.c:                fmfsk->stats->rx_eye[k][j] = rx_filt[k*neyesamp+neyeoffset+j];
+fmfsk.c:               //fmfsk->stats->rx_eye[k][j] = fmfsk_in[k*neyesamp+neyeoffset+j];
+fmfsk.c:        for(i=0; i<fmfsk->stats->neyetr; i++)
+fmfsk.c:                if(fabsf(fmfsk->stats->rx_eye[i][j])>eye_max)
+fmfsk.c:                    eye_max = fabsf(fmfsk->stats->rx_eye[i][j]);
+fmfsk.c:        for(i=0; i<fmfsk->stats->neyetr; i++)
+fmfsk.c:                fmfsk->stats->rx_eye[i][j] = (fmfsk->stats->rx_eye[i][j]/(2*eye_max))+.5;
+fmfsk_demod.c:    bitbuf = (uint8_t*)alloca(sizeof(uint8_t)*fmfsk->nbit);
+fmfsk_demod.c:    rawbuf = (int16_t*)alloca(sizeof(int16_t)*(fmfsk->N+fmfsk->Ts*2));
+fmfsk_demod.c:    modbuf = (float*)alloca(sizeof(float)*(fmfsk->N+fmfsk->Ts*2));
+fmfsk_demod.c:	for(i=0;i<fmfsk->nbit;i++){
+fmfsk_demod.c:	fwrite(bitbuf,sizeof(uint8_t),fmfsk->nbit,fout);
+fmfsk_mod.c:    bitbuf = (uint8_t*)alloca(sizeof(uint8_t)*fmfsk->nbit);
+fmfsk_mod.c:    rawbuf = (int16_t*)alloca(sizeof(int16_t)*fmfsk->N);
+fmfsk_mod.c:    modbuf = (float*)alloca(sizeof(float)*fmfsk->N);
+fmfsk_mod.c:    while( fread(bitbuf,sizeof(uint8_t),fmfsk->nbit,fin) == fmfsk->nbit ){
+fmfsk_mod.c:        for(i=0; i<fmfsk->N; i++){
+fmfsk_mod.c:        fwrite(rawbuf,sizeof(int16_t),fmfsk->N,fout);
+freedv_api.c:        f->tx_bits = (int*)malloc(f->fsk->Nbits*sizeof(uint8_t));
+freedv_api.c:        f->n_nom_modem_samples = f->fsk->N;
+freedv_api.c:        f->n_max_modem_samples = f->fsk->N + (f->fsk->Ts);
+freedv_api.c:        f->n_nat_modem_samples = f->fsk->N;
+freedv_api.c:        f->tx_bits = (int*)malloc(f->fmfsk->nbit*sizeof(uint8_t));
+freedv_api.c:        f->n_nom_modem_samples = f->fmfsk->N;
+freedv_api.c:        f->n_max_modem_samples = f->fmfsk->N + (f->fmfsk->Ts);
+freedv_api.c:        f->n_nat_modem_samples = f->fmfsk->N;
+freedv_api.c:        f->tx_bits = (int*)malloc(f->fsk->Nbits*sizeof(uint8_t));
+freedv_api.c:        f->n_nom_modem_samples = f->fsk->N;
+freedv_api.c:        f->n_max_modem_samples = f->fsk->N + (f->fsk->Ts);
+freedv_api.c:        f->n_nat_modem_samples = f->fsk->N;
+freedv_api.c:			f->tx_bits = (int*)malloc(f->fsk->Nbits*sizeof(uint8_t));
+freedv_api.c:			f->n_nom_modem_samples = f->fsk->N;
+freedv_api.c:			f->n_max_modem_samples = f->fsk->N + (f->fsk->Ts);
+freedv_api.c:			f->n_nat_modem_samples = f->fsk->N;
+freedv_api_sh.c:        f->tx_bits = (int*)malloc(f->fsk->Nbits*sizeof(uint8_t));
+freedv_api_sh.c:        f->n_nom_modem_samples = f->fsk->N;
+freedv_api_sh.c:        f->n_max_modem_samples = f->fsk->N + (f->fsk->Ts);
+freedv_api_sh.c:        f->n_nat_modem_samples = f->fsk->N;
+freedv_api_sh.c:        f->tx_bits = (int*)malloc(f->fmfsk->nbit*sizeof(uint8_t));
+freedv_api_sh.c:        f->n_nom_modem_samples = f->fmfsk->N;
+freedv_api_sh.c:        f->n_max_modem_samples = f->fmfsk->N + (f->fmfsk->Ts);
+freedv_api_sh.c:        f->n_nat_modem_samples = f->fmfsk->N;
+fsk.c:    fsk->Fs = Fs;
+fsk.c:    fsk->Rs = Rs;
+fsk.c:    fsk->Ts = Fs/Rs;
+fsk.c:    fsk->N = fsk->Ts*nsyms;
+fsk.c:    fsk->P = P;
+fsk.c:    fsk->Nsym = nsyms;
+fsk.c:    fsk->Nmem = fsk->N+(2*fsk->Ts);
+fsk.c:    fsk->f1_tx = tx_f1;
+fsk.c:    fsk->fs_tx = tx_fs;
+fsk.c:    fsk->nin = fsk->N;
+fsk.c:    fsk->mode = M==2 ? MODE_2FSK : MODE_4FSK;
+fsk.c:    fsk->Nbits = M==2 ? fsk->Nsym : fsk->Nsym*2;
+fsk.c:        if((fsk->N)&i)
+fsk.c:    fsk->Ndft = Ndft;
+fsk.c:    fsk->est_min = Rs/2;
+fsk.c:    if(fsk->est_min<0) fsk->est_min = 0;
+fsk.c:    fsk->est_max = (Fs/2)-Rs;
+fsk.c:    fsk->est_space = Rs-(Rs/5);
+fsk.c:    fsk->phi1_c = comp_exp_j(0);
+fsk.c:    fsk->phi2_c = comp_exp_j(0);
+fsk.c:    fsk->phi3_c = comp_exp_j(0);
+fsk.c:    fsk->phi4_c = comp_exp_j(0);
+fsk.c:    fsk->phi1_c.real = 0;
+fsk.c:    fsk->phi1_c.imag = 1;
+fsk.c:    memold = (4*fsk->Ts);
+fsk.c:    fsk->nstash = memold; 
+fsk.c:    fsk->samp_old = (float*) malloc(sizeof(float)*memold);
+fsk.c:    if(fsk->samp_old == NULL){
+fsk.c:    for(i=0;i<memold;i++)fsk->samp_old[i]=0;
+fsk.c:    fsk->fft_cfg = kiss_fftr_alloc(fsk->Ndft,0,NULL,NULL);
+fsk.c:    if(fsk->fft_cfg == NULL){
+fsk.c:        free(fsk->samp_old);
+fsk.c:    fsk->fft_est = (float*)malloc(sizeof(float)*fsk->Ndft/2);
+fsk.c:    if(fsk->fft_est == NULL){
+fsk.c:        free(fsk->samp_old);
+fsk.c:        free(fsk->fft_cfg);
+fsk.c:    for(i=0;i<fsk->Ndft/2;i++)fsk->fft_est[i] = 0;
+fsk.c:    fsk->norm_rx_timing = 0;
+fsk.c:    fsk->tx_phase_c = comp_exp_j(0);
+fsk.c:    fsk->EbNodB = 0;
+fsk.c:    fsk->f1_est = 0;
+fsk.c:    fsk->f2_est = 0;
+fsk.c:    fsk->f3_est = 0;
+fsk.c:    fsk->f4_est = 0;    
+fsk.c:    fsk->ppm = 0;
+fsk.c:    fsk->stats = NULL;
+fsk.c:    fsk->Fs = Fs;
+fsk.c:    fsk->Rs = Rs;
+fsk.c:    fsk->Ts = Fs/Rs;
+fsk.c:    fsk->N = Fs;
+fsk.c:    fsk->P = horus_P;
+fsk.c:    fsk->Nsym = fsk->N/fsk->Ts;
+fsk.c:    fsk->Ndft = Ndft;
+fsk.c:    fsk->Nmem = fsk->N+(2*fsk->Ts);
+fsk.c:    fsk->f1_tx = tx_f1;
+fsk.c:    fsk->fs_tx = tx_fs;
+fsk.c:    fsk->nin = fsk->N;
+fsk.c:    fsk->mode = M==2 ? MODE_2FSK : MODE_4FSK;
+fsk.c:    fsk->Nbits = M==2 ? fsk->Nsym : fsk->Nsym*2;
+fsk.c:    fsk->est_min = HORUS_MIN;
+fsk.c:    fsk->est_max = HORUS_MAX;
+fsk.c:    fsk->est_space = HORUS_MIN_SPACING;
+fsk.c:    fsk->phi1_c = comp_exp_j(0);
+fsk.c:    fsk->phi2_c = comp_exp_j(0);
+fsk.c:    fsk->phi3_c = comp_exp_j(0);
+fsk.c:    fsk->phi4_c = comp_exp_j(0);
+fsk.c:    fsk->phi1_c.real = 0;
+fsk.c:    fsk->phi1_c.imag = 1;
+fsk.c:    memold = (4*fsk->Ts);
+fsk.c:    fsk->nstash = memold; 
+fsk.c:    fsk->samp_old = (float*) malloc(sizeof(float)*memold);
+fsk.c:    if(fsk->samp_old == NULL){
+fsk.c:    for(i=0;i<memold;i++)fsk->samp_old[i]=0;
+fsk.c:    fsk->fft_cfg = kiss_fftr_alloc(Ndft,0,NULL,NULL);
+fsk.c:    if(fsk->fft_cfg == NULL){
+fsk.c:        free(fsk->samp_old);
+fsk.c:    fsk->fft_est = (float*)malloc(sizeof(float)*fsk->Ndft/2);
+fsk.c:    if(fsk->fft_est == NULL){
+fsk.c:        free(fsk->samp_old);
+fsk.c:        free(fsk->fft_cfg);
+fsk.c:    for(i=0;i<Ndft/2;i++)fsk->fft_est[i] = 0;
+fsk.c:    fsk->norm_rx_timing = 0;
+fsk.c:    fsk->tx_phase_c = comp_exp_j(0);
+fsk.c:    fsk->EbNodB = 0;
+fsk.c:    fsk->f1_est = 0;
+fsk.c:    fsk->f2_est = 0;
+fsk.c:    fsk->f3_est = 0;
+fsk.c:    fsk->f4_est = 0;    
+fsk.c:    fsk->ppm = 0;
+fsk.c:    fsk->stats = NULL;
+fsk.c:    fsk->N = fsk->Ts*nsyms;
+fsk.c:    fsk->Nsym = nsyms;
+fsk.c:    fsk->Nmem = fsk->N+(2*fsk->Ts);
+fsk.c:    fsk->nin = fsk->N;
+fsk.c:    fsk->Nbits = fsk->mode==2 ? fsk->Nsym : fsk->Nsym*2;
+fsk.c:        if((fsk->N)&i)
+fsk.c:    fsk->Ndft = Ndft;
+fsk.c:    free(fsk->fft_cfg);
+fsk.c:    free(fsk->fft_est);
+fsk.c:    fsk->fft_cfg = kiss_fftr_alloc(Ndft,0,NULL,NULL);
+fsk.c:    fsk->fft_est = (float*)malloc(sizeof(float)*fsk->Ndft/2);
+fsk.c:    for(i=0;i<Ndft/2;i++)fsk->fft_est[i] = 0;
+fsk.c:    for(i=0; i < (fsk->Ndft/2); i++){
+fsk.c:        fsk->fft_est[i] = 0;
+fsk.c:    fsk->nin = fsk->N;
+fsk.c:    return (uint32_t)fsk->nin;
+fsk.c:    free(fsk->fft_cfg);
+fsk.c:    free(fsk->samp_old);
+fsk.c:    fsk->stats = stats;
+fsk.c:	fsk->est_min = est_min;
+fsk.c:    if(fsk->est_min<0) fsk->est_min = 0;
+fsk.c:    fsk->est_max = est_max;
+fsk.c:    int Ndft = fsk->Ndft;
+fsk.c:    int Fs = fsk->Fs;
+fsk.c:    int nin = fsk->nin;
+fsk.c:    kiss_fftr_cfg fft_cfg = fsk->fft_cfg;
+fsk.c:    f_min  = (fsk->est_min*Ndft)/Fs;
+fsk.c:    f_max  = (fsk->est_max*Ndft)/Fs;
+fsk.c:    f_zero = (fsk->est_space*Ndft)/Fs;
+fsk.c:			fsk->fft_est[i] = (fsk->fft_est[i]*(1-tc)) + (sqrtf(fftout[i].r)*tc);
+fsk.c:			fftout[i].i = fsk->fft_est[i];
+fsk.c:    modem_probe_samp_f("t_fft_est",fsk->fft_est,Ndft/2);
+fsk.c:    int N = fsk->N;
+fsk.c:    int Ts = fsk->Ts;
+fsk.c:    int Rs = fsk->Rs;
+fsk.c:    int Fs = fsk->Fs;
+fsk.c:    int nsym = fsk->Nsym;
+fsk.c:    int nin = fsk->nin;
+fsk.c:    int P = fsk->P;
+fsk.c:    int Nmem = fsk->Nmem;
+fsk.c:    int M = fsk->mode;
+fsk.c:    int nstash = fsk->nstash;
+fsk.c:    COMP phi1_c = fsk->phi1_c;
+fsk.c:    COMP phi2_c = fsk->phi2_c;
+fsk.c:    if(fsk->f1_est<1){
+fsk.c:		fsk->f1_est = f_est[0];
+fsk.c:		fsk->f2_est = f_est[1];
+fsk.c:    dphi1 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk.c:    dphi2 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk.c:    dphi1 = comp_exp_j(2*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk.c:    dphi2 = comp_exp_j(2*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk.c:    sample_src = &(fsk->samp_old[nstash-nold]);
+fsk.c:	fsk->phi1_c = phi1_c;
+fsk.c:    fsk->phi2_c = phi2_c;
+fsk.c:	fsk->f1_est = f_est[0];
+fsk.c:	fsk->f2_est = f_est[1];
+fsk.c:    memcpy((void*)&(fsk->samp_old[0]),(void*)&(fsk_in[nin-nstash]),sizeof(float)*nstash);
+fsk.c:    old_norm_rx_timing = fsk->norm_rx_timing;
+fsk.c:    fsk->norm_rx_timing = norm_rx_timing;
+fsk.c:        fsk->ppm = .9*fsk->ppm + .1*appm;
+fsk.c:        fsk->nin = N+Ts/2;
+fsk.c:        fsk->nin = N-Ts/2;
+fsk.c:        fsk->nin = N;
+fsk.c:    modem_probe_samp_i("t_nin",&(fsk->nin),1);
+fsk.c:    fsk->EbNodB = -6+(20*log10f((1e-6+meanebno)/(1e-6+stdebno)));
+fsk.c:    fsk->EbNodB = 1;
+fsk.c:    if( fsk->stats != NULL ){
+fsk.c:        fsk->stats->clock_offset = fsk->ppm;
+fsk.c:        fsk->stats->snr_est = .5*fsk->stats->snr_est + .5*fsk->EbNodB;//+ 10*log10f(((float)Rs)/((float)Rs*M));
+fsk.c:        fsk->stats->rx_timing = (float)rx_timing;
+fsk.c:        fc_tx = (fsk->f1_tx+fsk->f1_tx+fsk->fs_tx)/2;
+fsk.c:        fsk->stats->foff = fc_tx-fc_avg;
+fsk.c:        neyesamp = fsk->stats->neyesamp = P*2;
+fsk.c:        fsk->stats->neyetr = fsk->mode*3;
+fsk.c:            fsk->stats->rx_eye[0][j] = cabsolute(f1_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[1][j] = cabsolute(f2_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[2][j] = cabsolute(f1_int[neyeoffset+neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[3][j] = cabsolute(f2_int[neyeoffset+neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[4][j] = cabsolute(f1_int[neyeoffset+2*neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[5][j] = cabsolute(f2_int[neyeoffset+2*neyesamp+j]);    
+fsk.c:        for(i=0; i<fsk->mode*3; i++)
+fsk.c:                if(fabsf(fsk->stats->rx_eye[i][j])>eye_max)
+fsk.c:                    eye_max = fabsf(fsk->stats->rx_eye[i][j]);
+fsk.c:        for(i=0; i<fsk->mode*3; i++)
+fsk.c:                fsk->stats->rx_eye[i][j] = fsk->stats->rx_eye[i][j]/eye_max;
+fsk.c:        fsk->stats->nr = 0;
+fsk.c:        fsk->stats->Nc = 0;
+fsk.c:    modem_probe_samp_f("t_EbNodB",&(fsk->EbNodB),1);
+fsk.c:    modem_probe_samp_f("t_ppm",&(fsk->ppm),1);
+fsk.c:    int N = fsk->N;
+fsk.c:    int Ts = fsk->Ts;
+fsk.c:    int Rs = fsk->Rs;
+fsk.c:    int Fs = fsk->Fs;
+fsk.c:    int nsym = fsk->Nsym;
+fsk.c:    int nin = fsk->nin;
+fsk.c:    int P = fsk->P;
+fsk.c:    int Nmem = fsk->Nmem;
+fsk.c:    int M = fsk->mode;
+fsk.c:    int nstash = fsk->nstash;
+fsk.c:    COMP phi1_c = fsk->phi1_c;
+fsk.c:    COMP phi2_c = fsk->phi2_c;
+fsk.c:    COMP phi3_c = fsk->phi3_c;
+fsk.c:    COMP phi4_c = fsk->phi4_c;
+fsk.c:    if(fsk->f1_est<1){
+fsk.c:		fsk->f1_est = f_est[0];
+fsk.c:		fsk->f2_est = f_est[1];
+fsk.c:		fsk->f3_est = f_est[2];
+fsk.c:		fsk->f4_est = f_est[3];
+fsk.c:    dphi1 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk.c:    dphi2 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk.c:    dphi3 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f3_est)/(float)(Fs)));
+fsk.c:    dphi4 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f4_est)/(float)(Fs)));
+fsk.c:    dphi1 = comp_exp_j(2*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk.c:    dphi2 = comp_exp_j(2*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk.c:    dphi3 = comp_exp_j(2*M_PI*((fsk->f3_est)/(float)(Fs)));
+fsk.c:    dphi4 = comp_exp_j(2*M_PI*((fsk->f4_est)/(float)(Fs)));
+fsk.c:    sample_src = &(fsk->samp_old[nstash-nold]);
+fsk.c:    fsk->phi1_c = phi1_c;
+fsk.c:	fsk->phi2_c = phi2_c;
+fsk.c:	fsk->phi3_c = phi3_c;
+fsk.c:	fsk->phi4_c = phi4_c;
+fsk.c:	fsk->f1_est = f_est[0];
+fsk.c:	fsk->f2_est = f_est[1];
+fsk.c:	fsk->f3_est = f_est[2];
+fsk.c:	fsk->f4_est = f_est[3];
+fsk.c:    memcpy((void*)&(fsk->samp_old[0]),(void*)&(fsk_in[nin-nstash]),sizeof(float)*nstash);
+fsk.c:    old_norm_rx_timing = fsk->norm_rx_timing;
+fsk.c:    fsk->norm_rx_timing = norm_rx_timing;
+fsk.c:        fsk->ppm = .9*fsk->ppm + .1*appm;
+fsk.c:        fsk->nin = N+Ts/2;
+fsk.c:        fsk->nin = N-Ts/2;
+fsk.c:        fsk->nin = N;
+fsk.c:    modem_probe_samp_i("t_nin",&(fsk->nin),1);
+fsk.c:    fsk->EbNodB = -6+(20*log10f((1e-6+meanebno)/(1e-6+stdebno)));
+fsk.c:    fsk->EbNodB = 1;
+fsk.c:    if( fsk->stats != NULL ){
+fsk.c:        fsk->stats->clock_offset = fsk->ppm;
+fsk.c:        fsk->stats->snr_est = .5*fsk->stats->snr_est + .5*fsk->EbNodB;//+ 10*log10f(((float)Rs)/((float)Rs*M));
+fsk.c:        fsk->stats->rx_timing = (float)rx_timing;
+fsk.c:        fc_tx = (fsk->f1_tx+fsk->f1_tx+fsk->fs_tx)/2;
+fsk.c:        fsk->stats->foff = fc_tx-fc_avg;
+fsk.c:        neyesamp = fsk->stats->neyesamp = P*2;
+fsk.c:        fsk->stats->neyetr = fsk->mode*2;
+fsk.c:            fsk->stats->rx_eye[0][j] = cabsolute(f1_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[1][j] = cabsolute(f2_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[2][j] = cabsolute(f3_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[3][j] = cabsolute(f4_int[neyeoffset+j]);
+fsk.c:            fsk->stats->rx_eye[4][j] = cabsolute(f1_int[neyeoffset+neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[5][j] = cabsolute(f2_int[neyeoffset+neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[6][j] = cabsolute(f3_int[neyeoffset+neyesamp+j]);
+fsk.c:            fsk->stats->rx_eye[7][j] = cabsolute(f4_int[neyeoffset+neyesamp+j]);    
+fsk.c:        for(i=0; i<fsk->mode*2; i++)
+fsk.c:                if(fabsf(fsk->stats->rx_eye[i][j])>eye_max)
+fsk.c:                    eye_max = fabsf(fsk->stats->rx_eye[i][j]);
+fsk.c:        for(i=0; i<fsk->mode*2; i++)
+fsk.c:                fsk->stats->rx_eye[i][j] = fsk->stats->rx_eye[i][j]/eye_max;
+fsk.c:        fsk->stats->nr = 0;
+fsk.c:        fsk->stats->Nc = 0;
+fsk.c:    modem_probe_samp_f("t_EbNodB",&(fsk->EbNodB),1);
+fsk.c:    modem_probe_samp_f("t_ppm",&(fsk->ppm),1);
+fsk.c:	if(fsk->mode == 4){
+fsk.c:	if(fsk->mode == 4){
+fsk.c:    COMP tx_phase_c = fsk->tx_phase_c; /* Current complex TX phase */
+fsk.c:    int f1_tx = fsk->f1_tx;         /* '0' frequency */
+fsk.c:    int fs_tx = fsk->fs_tx;         /* space between frequencies */
+fsk.c:    int Ts = fsk->Ts;               /* samples-per-symbol */
+fsk.c:    int Fs = fsk->Fs;               /* sample freq */
+fsk.c:    if(fsk->mode == 2){
+fsk.c:		for(i=0; i<fsk->Nsym; i++){
+fsk.c:		for(i=0; i<fsk->Nsym; i++){
+fsk.c:    fsk->tx_phase_c = tx_phase_c;
+fsk_demod.c:        sdbuf = (float*)malloc(sizeof(float)*fsk->Nbits);
+fsk_demod.c:        bitbuf = (uint8_t*)malloc(sizeof(uint8_t)*fsk->Nbits);
+fsk_demod.c:    rawbuf = (int16_t*)malloc(sizeof(int16_t)*(fsk->N+fsk->Ts*2));
+fsk_demod.c:    modbuf = (float*)malloc(sizeof(float)*(fsk->N+fsk->Ts*2));
+fsk_demod.c:            fprintf(stderr,"{\"EbNodB\": %2.2f,\t\"ppm\": %d,",stats.snr_est,(int)fsk->ppm);
+fsk_demod.c:            fprintf(stderr,"\t\"f1_est\":%.1f,\t\"f2_est\":%.1f",fsk->f1_est,fsk->f2_est);
+fsk_demod.c:            if(fsk->mode == 4){
+fsk_demod.c:                fprintf(stderr,",\t\"f3_est\":%.1f,\t\"f4_est\":%.1f",fsk->f3_est,fsk->f4_est);
+fsk_demod.c:            /*for(i=0;i<fsk->Nbits;i++){
+fsk_demod.c:            fwrite(sdbuf,sizeof(float),fsk->Nbits,fout);
+fsk_demod.c:            fwrite(bitbuf,sizeof(uint8_t),fsk->Nbits,fout);
+fsk_mod.c:    fprintf(stderr,"fsk->n: %d\n",fsk->N);
+fsk_mod.c:    bitbuf = (uint8_t*)malloc(sizeof(uint8_t)*fsk->Nbits);
+fsk_mod.c:    rawbuf = (int16_t*)malloc(sizeof(int16_t)*fsk->N);
+fsk_mod.c:    modbuf = (float*)malloc(sizeof(float)*fsk->N);
+fsk_mod.c:    while( fread(bitbuf,sizeof(uint8_t),fsk->Nbits,fin) == fsk->Nbits ){
+fsk_mod.c:        for(i=0; i<fsk->N; i++){
+fsk_mod.c:        fwrite(rawbuf,sizeof(int16_t),fsk->N,fout);
+fsk_sh.c:    fsk->Fs = Fs;
+fsk_sh.c:    fsk->Rs = Rs;
+fsk_sh.c:    fsk->Ts = Fs/Rs;
+fsk_sh.c:    fsk->N = fsk->Ts*nsyms;
+fsk_sh.c:    fsk->P = P;
+fsk_sh.c:    fsk->Nsym = nsyms;
+fsk_sh.c:    fsk->Nmem = fsk->N+(2*fsk->Ts);
+fsk_sh.c:    fsk->f1_tx = tx_f1;
+fsk_sh.c:    fsk->fs_tx = tx_fs;
+fsk_sh.c:    fsk->nin = fsk->N;
+fsk_sh.c:    fsk->mode = M==2 ? MODE_2FSK : MODE_4FSK;
+fsk_sh.c:    fsk->Nbits = M==2 ? fsk->Nsym : fsk->Nsym*2;
+fsk_sh.c:        if((fsk->N)&i)
+fsk_sh.c:    fsk->Ndft = Ndft;
+fsk_sh.c:    fsk->est_min = tx_f1-3*Rs;
+fsk_sh.c:    if(fsk->est_min<0) fsk->est_min = 0;
+fsk_sh.c:    fsk->est_max = (Fs/2)-Rs;
+fsk_sh.c:    fsk->est_space = Rs;
+fsk_sh.c:    fsk->phi1_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi2_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi3_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi4_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi1_c.real = 0;
+fsk_sh.c:    fsk->phi1_c.imag = 1;
+fsk_sh.c:    memold = (4*fsk->Ts);
+fsk_sh.c:    fsk->nstash = memold; 
+fsk_sh.c:    fsk->samp_old = (float*) malloc(sizeof(float)*memold);
+fsk_sh.c:    if(fsk->samp_old == NULL){
+fsk_sh.c:    for(i=0;i<memold;i++)fsk->samp_old[i]=0;
+fsk_sh.c:    fsk->fft_cfg = kiss_fftr_alloc(fsk->Ndft,0,NULL,NULL);
+fsk_sh.c:    if(fsk->fft_cfg == NULL){
+fsk_sh.c:        free(fsk->samp_old);
+fsk_sh.c:    fsk->fft_est = (float*)malloc(sizeof(float)*fsk->Ndft/2);
+fsk_sh.c:    if(fsk->fft_est == NULL){
+fsk_sh.c:        free(fsk->samp_old);
+fsk_sh.c:        free(fsk->fft_cfg);
+fsk_sh.c:    for(i=0;i<fsk->Ndft/2;i++)fsk->fft_est[i] = 0;
+fsk_sh.c:    fsk->norm_rx_timing = 0;
+fsk_sh.c:    fsk->tx_phase_c = comp_exp_j(0);
+fsk_sh.c:    fsk->EbNodB = 0;
+fsk_sh.c:    fsk->f1_est = 0;
+fsk_sh.c:    fsk->f2_est = 0;
+fsk_sh.c:    fsk->f3_est = 0;
+fsk_sh.c:    fsk->f4_est = 0;    
+fsk_sh.c:    fsk->ppm = 0;
+fsk_sh.c:    fsk->stats = NULL;
+fsk_sh.c:    fsk->Fs = Fs;
+fsk_sh.c:    fsk->Rs = Rs;
+fsk_sh.c:    fsk->Ts = Fs/Rs;
+fsk_sh.c:    fsk->N = Fs;
+fsk_sh.c:    fsk->P = horus_P;
+fsk_sh.c:    fsk->Nsym = fsk->N/fsk->Ts;
+fsk_sh.c:    fsk->Ndft = Ndft;
+fsk_sh.c:    fsk->Nmem = fsk->N+(2*fsk->Ts);
+fsk_sh.c:    fsk->f1_tx = tx_f1;
+fsk_sh.c:    fsk->fs_tx = tx_fs;
+fsk_sh.c:    fsk->nin = fsk->N;
+fsk_sh.c:    fsk->mode = M==2 ? MODE_2FSK : MODE_4FSK;
+fsk_sh.c:    fsk->Nbits = M==2 ? fsk->Nsym : fsk->Nsym*2;
+fsk_sh.c:    fsk->est_min = HORUS_MIN;
+fsk_sh.c:    fsk->est_max = HORUS_MAX;
+fsk_sh.c:    fsk->est_space = HORUS_MIN_SPACING;
+fsk_sh.c:    fsk->phi1_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi2_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi3_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi4_c = comp_exp_j(0);
+fsk_sh.c:    fsk->phi1_c.real = 0;
+fsk_sh.c:    fsk->phi1_c.imag = 1;
+fsk_sh.c:    memold = (4*fsk->Ts);
+fsk_sh.c:    fsk->nstash = memold; 
+fsk_sh.c:    fsk->samp_old = (float*) malloc(sizeof(float)*memold);
+fsk_sh.c:    if(fsk->samp_old == NULL){
+fsk_sh.c:    for(i=0;i<memold;i++)fsk->samp_old[i]=0;
+fsk_sh.c:    fsk->fft_cfg = kiss_fftr_alloc(Ndft,0,NULL,NULL);
+fsk_sh.c:    if(fsk->fft_cfg == NULL){
+fsk_sh.c:        free(fsk->samp_old);
+fsk_sh.c:    fsk->fft_est = (float*)malloc(sizeof(float)*fsk->Ndft/2);
+fsk_sh.c:    if(fsk->fft_est == NULL){
+fsk_sh.c:        free(fsk->samp_old);
+fsk_sh.c:        free(fsk->fft_cfg);
+fsk_sh.c:    for(i=0;i<Ndft/2;i++)fsk->fft_est[i] = 0;
+fsk_sh.c:    fsk->norm_rx_timing = 0;
+fsk_sh.c:    fsk->tx_phase_c = comp_exp_j(0);
+fsk_sh.c:    fsk->EbNodB = 0;
+fsk_sh.c:    fsk->f1_est = 0;
+fsk_sh.c:    fsk->f2_est = 0;
+fsk_sh.c:    fsk->f3_est = 0;
+fsk_sh.c:    fsk->f4_est = 0;    
+fsk_sh.c:    fsk->ppm = 0;
+fsk_sh.c:    fsk->stats = NULL;
+fsk_sh.c:    return (uint32_t)fsk->nin;
+fsk_sh.c:    free(fsk->fft_cfg);
+fsk_sh.c:    free(fsk->samp_old);
+fsk_sh.c:    fsk->stats = stats;
+fsk_sh.c:    int Ndft = fsk->Ndft;
+fsk_sh.c:    int Fs = fsk->Fs;
+fsk_sh.c:    int nin = fsk->nin;
+fsk_sh.c:    kiss_fftr_cfg fft_cfg = fsk->fft_cfg;
+fsk_sh.c:    f_min  = (fsk->est_min*Ndft)/Fs;
+fsk_sh.c:    f_max  = (fsk->est_max*Ndft)/Fs;
+fsk_sh.c:    f_zero = (fsk->est_space*Ndft)/(2*Fs);
+fsk_sh.c:			fsk->fft_est[i] = fsk->fft_est[i]*.95 + sqrtf(fftout[i].r)*.05;
+fsk_sh.c:			fftout[i].i = fsk->fft_est[i];
+fsk_sh.c:    modem_probe_samp_f("t_fft_est",fsk->fft_est,Ndft/2);
+fsk_sh.c:    int N = fsk->N;
+fsk_sh.c:    int Ts = fsk->Ts;
+fsk_sh.c:    int Rs = fsk->Rs;
+fsk_sh.c:    int Fs = fsk->Fs;
+fsk_sh.c:    int nsym = fsk->Nsym;
+fsk_sh.c:    int nin = fsk->nin;
+fsk_sh.c:    int P = fsk->P;
+fsk_sh.c:    int Nmem = fsk->Nmem;
+fsk_sh.c:    int M = fsk->mode;
+fsk_sh.c:    int nstash = fsk->nstash;
+fsk_sh.c:    COMP phi1_c = fsk->phi1_c;
+fsk_sh.c:    COMP phi2_c = fsk->phi2_c;
+fsk_sh.c:    if(fsk->f1_est<1){
+fsk_sh.c:		fsk->f1_est = f_est[0];
+fsk_sh.c:		fsk->f2_est = f_est[1];
+fsk_sh.c:    dphi1 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk_sh.c:    dphi2 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk_sh.c:    dphi1 = comp_exp_j(2*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk_sh.c:    dphi2 = comp_exp_j(2*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk_sh.c:    sample_src = &(fsk->samp_old[nstash-nold]);
+fsk_sh.c:	fsk->phi1_c = phi1_c;
+fsk_sh.c:    fsk->phi2_c = phi2_c;
+fsk_sh.c:	fsk->f1_est = f_est[0];
+fsk_sh.c:	fsk->f2_est = f_est[1];
+fsk_sh.c:    memcpy((void*)&(fsk->samp_old[0]),(void*)&(fsk_in[nin-nstash]),sizeof(float)*nstash);
+fsk_sh.c:    old_norm_rx_timing = fsk->norm_rx_timing;
+fsk_sh.c:    fsk->norm_rx_timing = norm_rx_timing;
+fsk_sh.c:        fsk->ppm = .9*fsk->ppm + .1*appm;
+fsk_sh.c:        fsk->nin = N+Ts/2;
+fsk_sh.c:        fsk->nin = N-Ts/2;
+fsk_sh.c:        fsk->nin = N;
+fsk_sh.c:    fsk->EbNodB = -6+(20*log10f((1e-6+meanebno)/(1e-6+stdebno)));
+fsk_sh.c:    fsk->EbNodB = 1;
+fsk_sh.c:    if( fsk->stats != NULL ){
+fsk_sh.c:        fsk->stats->clock_offset = fsk->ppm;
+fsk_sh.c:        fsk->stats->snr_est = fsk->EbNodB + 10*log10f(((float)Rs)/((float)Rs*M));
+fsk_sh.c:        fsk->stats->rx_timing = (float)rx_timing;
+fsk_sh.c:        fc_tx = (fsk->f1_tx+fsk->f1_tx+fsk->fs_tx)/2;
+fsk_sh.c:        fsk->stats->foff = fc_tx-fc_avg;
+fsk_sh.c:        fsk->stats->nr = 0;
+fsk_sh.c:        fsk->stats->Nc = 0;
+fsk_sh.c:    modem_probe_samp_f("t_EbNodB",&(fsk->EbNodB),1);
+fsk_sh.c:    modem_probe_samp_f("t_ppm",&(fsk->ppm),1);
+fsk_sh.c:    int N = fsk->N;
+fsk_sh.c:    int Ts = fsk->Ts;
+fsk_sh.c:    int Rs = fsk->Rs;
+fsk_sh.c:    int Fs = fsk->Fs;
+fsk_sh.c:    int nsym = fsk->Nsym;
+fsk_sh.c:    int nin = fsk->nin;
+fsk_sh.c:    int P = fsk->P;
+fsk_sh.c:    int Nmem = fsk->Nmem;
+fsk_sh.c:    int M = fsk->mode;
+fsk_sh.c:    int nstash = fsk->nstash;
+fsk_sh.c:    COMP phi1_c = fsk->phi1_c;
+fsk_sh.c:    COMP phi2_c = fsk->phi2_c;
+fsk_sh.c:    COMP phi3_c = fsk->phi3_c;
+fsk_sh.c:    COMP phi4_c = fsk->phi4_c;
+fsk_sh.c:    if(fsk->f1_est<1){
+fsk_sh.c:		fsk->f1_est = f_est[0];
+fsk_sh.c:		fsk->f2_est = f_est[1];
+fsk_sh.c:		fsk->f3_est = f_est[2];
+fsk_sh.c:		fsk->f4_est = f_est[3];
+fsk_sh.c:    dphi1 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk_sh.c:    dphi2 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk_sh.c:    dphi3 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f3_est)/(float)(Fs)));
+fsk_sh.c:    dphi4 = comp_exp_j(-2*(Nmem-nin-(Ts/P))*M_PI*((fsk->f4_est)/(float)(Fs)));
+fsk_sh.c:    dphi1 = comp_exp_j(2*M_PI*((fsk->f1_est)/(float)(Fs)));
+fsk_sh.c:    dphi2 = comp_exp_j(2*M_PI*((fsk->f2_est)/(float)(Fs)));
+fsk_sh.c:    dphi3 = comp_exp_j(2*M_PI*((fsk->f3_est)/(float)(Fs)));
+fsk_sh.c:    dphi4 = comp_exp_j(2*M_PI*((fsk->f4_est)/(float)(Fs)));
+fsk_sh.c:    sample_src = &(fsk->samp_old[nstash-nold]);
+fsk_sh.c:    fsk->phi1_c = phi1_c;
+fsk_sh.c:	fsk->phi2_c = phi2_c;
+fsk_sh.c:	fsk->phi3_c = phi3_c;
+fsk_sh.c:	fsk->phi4_c = phi4_c;
+fsk_sh.c:	fsk->f1_est = f_est[0];
+fsk_sh.c:	fsk->f2_est = f_est[1];
+fsk_sh.c:	fsk->f3_est = f_est[2];
+fsk_sh.c:	fsk->f4_est = f_est[3];
+fsk_sh.c:    memcpy((void*)&(fsk->samp_old[0]),(void*)&(fsk_in[nin-nstash]),sizeof(float)*nstash);
+fsk_sh.c:    old_norm_rx_timing = fsk->norm_rx_timing;
+fsk_sh.c:    fsk->norm_rx_timing = norm_rx_timing;
+fsk_sh.c:        fsk->ppm = .9*fsk->ppm + .1*appm;
+fsk_sh.c:        fsk->nin = N+Ts/2;
+fsk_sh.c:        fsk->nin = N-Ts/2;
+fsk_sh.c:        fsk->nin = N;
+fsk_sh.c:    fsk->EbNodB = -6+(20*log10f((1e-6+meanebno)/(1e-6+stdebno)));
+fsk_sh.c:    fsk->EbNodB = 1;
+fsk_sh.c:    if( fsk->stats != NULL ){
+fsk_sh.c:        fsk->stats->clock_offset = fsk->ppm;
+fsk_sh.c:        fsk->stats->snr_est = fsk->EbNodB + 10*log10f(((float)Rs*2)/((float)Rs*M));
+fsk_sh.c:        fsk->stats->rx_timing = (float)rx_timing;
+fsk_sh.c:        fc_tx = (fsk->f1_tx+fsk->f1_tx+(fsk->fs_tx*3))/2;
+fsk_sh.c:        fsk->stats->foff = fc_tx-fc_avg;
+fsk_sh.c:        fsk->stats->nr = 0;
+fsk_sh.c:        fsk->stats->Nc = 0;
+fsk_sh.c:    modem_probe_samp_f("t_EbNodB",&(fsk->EbNodB),1);
+fsk_sh.c:    modem_probe_samp_f("t_ppm",&(fsk->ppm),1);
+fsk_sh.c:	if(fsk->mode == 4){
+fsk_sh.c:    COMP tx_phase_c = fsk->tx_phase_c; /* Current complex TX phase */
+fsk_sh.c:    int f1_tx = fsk->f1_tx;         /* '0' frequency */
+fsk_sh.c:    int fs_tx = fsk->fs_tx;         /* space between frequencies */
+fsk_sh.c:    int Ts = fsk->Ts;               /* samples-per-symbol */
+fsk_sh.c:    int Fs = fsk->Fs;               /* sample freq */
+fsk_sh.c:    if(fsk->mode == 2){
+fsk_sh.c:		for(i=0; i<fsk->Nsym; i++){
+fsk_sh.c:		for(i=0; i<fsk->Nsym; i++){
+fsk_sh.c:    fsk->tx_phase_c = tx_phase_c;

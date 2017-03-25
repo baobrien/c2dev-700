@@ -1,0 +1,8 @@
+# Created by Octave 4.0.3, Wed Mar 22 18:25:09 2017 CDT <baobrien@baobrien-d-desktop>
+# name: vec
+# type: matrix
+# rows: 1
+# columns: 3
+ 1 2 3
+
+
