@@ -41,7 +41,7 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
-  K = 25;
+  K = 20;
   [surface sample_freqs_kHz] = resample_const_rate_f_mel(model, K);
   target_surface = surface;
 
