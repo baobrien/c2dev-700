@@ -209,7 +209,7 @@ function [rate_K_surface rate_K_sample_freqs_kHz] = resample_const_rate_f(model,
     % clip between peak and peak -50dB, to reduce dynamic range
 
     AmdB_peak = max(AmdB);
-    AmdB(find(AmdB < (AmdB_peak-50))) = AmdB_peak-50;
+    AmdB(find(AmdB < (AmdB_peak-200))) = AmdB_peak-50;
 
     rate_L_sample_freqs_kHz = (1:L)*Wo*4/pi;
 

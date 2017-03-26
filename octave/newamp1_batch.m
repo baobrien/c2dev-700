@@ -489,7 +489,7 @@ endfunction
 % processing, as a stepping stone to C.
 
 function [model_ voicing_] = model_from_indexes_fbf(indexes)
-  max_amp = 80;  K = 25;  M = 4;
+  max_amp = 80;  K = 20;  M = 4;
 
   [frames nc] = size(indexes);
   model = model_ = zeros(frames, max_amp+3);
