@@ -36,11 +36,11 @@
 
 #}
 
-
 % In general, this function processes a bunch of amplitudes, we then
 % use c2sim to hear the results.  Bunch of different experiments below
 
 function surface = newamp1_batch(input_prefix, output_prefix)
+  pkg load statistics;
   newamp;
   more off;
 
@@ -74,7 +74,7 @@ function surface = newamp1_batch(input_prefix, output_prefix)
   [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
   %[model_ voicing_] = model_from_indexes(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
-  %[model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
+  [model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
   %model_ = experiment_dec_linear(model_);
   %model_ = experiment_energy_rate_linear(model, 1, 0);
@@ -190,7 +190,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
   % only need to do this every 4th frame.
 
   melvq;
-  load train_120_srf_lb; m=5;
+  %load train_120_srf_lb; m=5;
+  load train_120_diffs; m=5;
   %train_120_srf
   %load vq_700c_full; m=5;
   %train_120_vq = vq_700c_full;
@@ -201,18 +202,23 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
     surface_no_mean(f,:) = surface(f,:) - mean_f(f);
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz')
     n = sample_freqs_kHz*b;
-    if(b<0)
-        surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
-    end
+    %if(b<0)
+    %surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
+    %end
+    surface_no_mean_diff(f,:) = [surface_no_mean(f,1) diff(surface_no_mean(f,:))];
   end
   figure(2);
   mesh(surface_no_mean);
   figure(5)
   hist(mean_f)
 
-  [res surface_no_mean_ ind] = mbest(train_120_vq, surface_no_mean, m);
+  [res surface_no_mean_diff_ ind] = mbest(train_120_vq, surface_no_mean_diff, m);
   indexes(:,1:2) = ind;
-  surface_no_mean_ = surface_no_mean;
+ % surface_no_mean_diff_ = surface_no_mean_diff;
+
+  for f=1:frames
+      surface_no_mean_(f,:) = cumsum(surface_no_mean_diff_(f,:));
+  end
 
   for f=1:frames
     surface_no_mean_(f,:) = post_filter(surface_no_mean_(f,:), sample_freqs_kHz, 1.5);
@@ -392,16 +398,19 @@ function [model_ voicing_] = model_from_indexes(indexes)
   energy_q = 10 + 40/16*(0:15);
 
   melvq;
-  load train_120_srf; m=5;
+  %load train_120_srf; m=5;
+  load train_120_diffs; m=5;
   %load vq_700c_full; m=5;
   %train_120_vq = vq_700c_full;
 
   % decode vector quantised surface
 
   surface_no_mean_ = zeros(frames,K);
+  surface_no_mean_diff_ = zeros(frames,K);
   surface_ = zeros(frames, K);
   for f=1:M:frames
-    surface_no_mean_(f,:) = train_120_vq(indexes(f,1),:,1) + train_120_vq(indexes(f,2),:,2);
+    surface_no_mean_diff_(f,:) = train_120_vq(indexes(f,1),:,1) + train_120_vq(indexes(f,2),:,2);
+    surface_no_mean_(f,:) = cumsum(surface_no_mean_diff_(f,:));
     surface_no_mean_(f,:) = post_filter(surface_no_mean_(f,:), sample_freqs_kHz, 1.5);
     mean_f_ = energy_q(indexes(f,3)+1);
     surface_(f,:) = surface_no_mean_(f,:) + mean_f_;
@@ -489,7 +498,7 @@ endfunction
 % processing, as a stepping stone to C.
 
 function [model_ voicing_] = model_from_indexes_fbf(indexes)
-  max_amp = 80;  K = 25;  M = 4;
+  max_amp = 80;  K = 20;  M = 4;
 
   [frames nc] = size(indexes);
   model = model_ = zeros(frames, max_amp+3);
@@ -497,12 +506,13 @@ function [model_ voicing_] = model_from_indexes_fbf(indexes)
   energy_q = 10 + 40/16*(0:15);
 
   melvq;
-  load train_120_srf_lb; m=5;
+  load train_120_diffs; m=5;
   %load train_k35_vq;
   %load vq_700c_full; m=5;
   %train_120_vq = vq_700c_full;
 
   surface_no_mean_ = zeros(frames,K);
+  surface_no_mean_diff_ = zeros(frames,K);
   surface_ = zeros(frames, K);
   interpolated_surface_ = zeros(frames, K);
   voicing = zeros(1, frames);
@@ -511,7 +521,8 @@ function [model_ voicing_] = model_from_indexes_fbf(indexes)
   for f=1:M:frames
     % decode vector quantised surface
 
-    surface_no_mean_(f,:) = train_120_vq(indexes(f,1),:,1) + train_120_vq(indexes(f,2),:,2);
+    surface_no_mean_diff_(f,:) = train_120_vq(indexes(f,1),:,1) + train_120_vq(indexes(f,2),:,2);
+    surface_no_mean_(f,:) = cumsum(surface_no_mean_diff_(f,:));
     surface_no_mean_(f,:) = post_filter(surface_no_mean_(f,:), sample_freqs_kHz, 1.5);
     mean_f_ = energy_q(indexes(f,3)+1);
     surface_(f,:) = surface_no_mean_(f,:) + mean_f_;

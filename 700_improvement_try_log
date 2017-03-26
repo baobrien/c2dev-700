@@ -1,0 +1,2 @@
+3/25 - Trying to take diff() of rate K surface before VQ
+Results - mse of VQ about 1/2 higher, audio muffled on the high end. calling dead end for now.

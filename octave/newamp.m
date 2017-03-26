@@ -222,9 +222,10 @@ function [rate_K_surface rate_K_sample_freqs_kHz] = resample_const_rate_f(model,
         rate_K_surface(f,kk) = AmdB(1);
         kk = kk + 1;
     end
-
+    printf("\rresample K frame %d of %d",f,frames)
     %printf("\r%d/%d", f, frames);
   end
+  printf("\n");
   %printf("\n");
 endfunction
 

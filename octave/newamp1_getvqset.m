@@ -5,7 +5,7 @@
 % This program is distributed under the terms of the GNU General Public License
 % Version 1
 
-function generate_save_training_set(input_prefix, output_prefix)
+function surface = generate_save_training_set(input_prefix, output_prefix)
     newamp;
     more off;
 
@@ -19,9 +19,9 @@ function generate_save_training_set(input_prefix, output_prefix)
     model_name = strcat(input_prefix,"_model.txt");
     model = load(model_name);
     [frames nc] = size(model);
-    surface_no_mean = rate_K_dec_vq_dump(model);
+    surface = rate_K_dec_vq_dump(model);
     surface_name = strcat(output_prefix,"_vectors.txt")
-    save(surface_name,"surface_no_mean")
+    save(surface_name,"surface")
 endfunction
 
 % -----------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ endfunction
 %
 % Stripped down to dump the rate-k surface as a VQ training set
 
-function surface_no_mean = rate_K_dec_vq_dump(model)
+function surface_no_mean_diff = rate_K_dec_vq_dump(model)
   max_amp = 80;
   [frames nc] = size(model);
   model_ = zeros(frames, max_amp+3);
@@ -41,7 +41,7 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
-  K = 25;
+  K = 20;
   [surface sample_freqs_kHz] = resample_const_rate_f_mel(model, K);
   target_surface = surface;
 
@@ -52,7 +52,8 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
   % only need to do this every 4th frame.
 
   melvq;
-  load train_120_vq; m=5;
+  %load train_120_vq; m=5;
+ % load train_120_diffs; m=5;
 
   for f=1:frames
     mean_f(f) = mean(surface(f,:));
@@ -60,7 +61,10 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz');
     n = sample_freqs_kHz*b;
     surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
+    surface_no_mean_diff(f,:) = [surface_no_mean(f,1) diff(surface_no_mean(f,:))];
+    printf("\rremove mean frame %d of %d",f,frames)
   end
+  printf("\n")
   figure(1)
   hist(mean_f)
   %figure(2)
