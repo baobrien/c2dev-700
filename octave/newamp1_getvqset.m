@@ -61,7 +61,7 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz');
     n = sample_freqs_kHz*b;
     surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
-    print("\rrm mean frame %d of %d",f,frames)
+    printf("\rrm mean frame %d of %d",f,frames)
   end
   printf("\n")
   figure(1)
