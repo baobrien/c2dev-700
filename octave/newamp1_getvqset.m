@@ -5,7 +5,7 @@
 % This program is distributed under the terms of the GNU General Public License
 % Version 1
 
-function generate_save_training_set(input_prefix, output_prefix)
+function surface_vector = generate_save_training_set(input_prefix, output_prefix)
     newamp;
     more off;
 
@@ -20,8 +20,9 @@ function generate_save_training_set(input_prefix, output_prefix)
     model = load(model_name);
     [frames nc] = size(model);
     surface_no_mean = rate_K_dec_vq_dump(model);
-    surface_name = strcat(output_prefix,"_vectors.txt")
+    surface_name = strcat(output_prefix,"_vectors.txt");
     save(surface_name,"surface_no_mean")
+    surface_vector = surface_no_mean;
 endfunction
 
 % -----------------------------------------------------------------------------------------
@@ -60,7 +61,9 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz');
     n = sample_freqs_kHz*b;
     surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
+    print("\rrm mean frame %d of %d",f,frames)
   end
+  printf("\n")
   figure(1)
   hist(mean_f)
   %figure(2)

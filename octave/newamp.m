@@ -223,9 +223,9 @@ function [rate_K_surface rate_K_sample_freqs_kHz] = resample_const_rate_f(model,
         kk = kk + 1;
     end
 
-    %printf("\r%d/%d", f, frames);
+    printf("\r resample frame %d of %d", f, frames);
   end
-  %printf("\n");
+  printf("\n");
 endfunction
 
 
