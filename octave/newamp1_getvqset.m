@@ -5,7 +5,7 @@
 % This program is distributed under the terms of the GNU General Public License
 % Version 1
 
-function generate_save_training_set(input_prefix, output_prefix)
+function surface_no_mean = generate_save_training_set(input_prefix, output_prefix)
     newamp;
     more off;
 
@@ -45,6 +45,10 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
   [surface sample_freqs_kHz] = resample_const_rate_f_mel(model, K);
   target_surface = surface;
 
+  max_frq_kHz = max(sample_freqs_kHz);
+  vq_bias = 1-(max_frq_kHz./(max_frq_kHz*-2.5));
+  vq_bias_i = 1./vq_bias;
+
   %figure(1);
   %mesh(surface);
 
@@ -60,9 +64,10 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz');
     n = sample_freqs_kHz*b;
     surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
+    surface_no_mean(f,:) = surface_no_mean(f,:) .* vq_bias;
+    printf("\rmean frame %d of %d",f,frames)
   end
-  figure(1)
-  hist(mean_f)
+  printf("\n")
   %figure(2)
 
   %figure(2);

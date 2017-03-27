@@ -74,7 +74,7 @@ function surface = newamp1_batch(input_prefix, output_prefix)
   [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
   %[model_ voicing_] = model_from_indexes(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
-  %[model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
+  [model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
   %model_ = experiment_dec_linear(model_);
   %model_ = experiment_energy_rate_linear(model, 1, 0);
@@ -182,7 +182,9 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
   K = 20;
   [surface sample_freqs_kHz] = resample_const_rate_f_mel(model, K);
   target_surface = surface;
-
+  max_frq_kHz = max(sample_freqs_kHz);
+  vq_bias = 1-(max_frq_kHz./(max_frq_kHz*-2.5));
+  vq_bias_i = 1./vq_bias;
   figure(1);
   mesh(surface);
 
@@ -190,11 +192,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
   % only need to do this every 4th frame.
 
   melvq;
-  load train_120_srf_lb; m=5;
-  %train_120_srf
-  %load vq_700c_full; m=5;
-  %train_120_vq = vq_700c_full;
-  %load train_k35_vq; m=5;
+  load train_120_bias; m=5;
 
   for f=1:frames
     mean_f(f) = mean(surface(f,:));
@@ -204,6 +202,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
     if(b<0)
         surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
     end
+    surface_no_mean(f,:) = surface_no_mean(f,:) .* vq_bias;
+    printf("\rmean frame %d of %d",f,frames)
   end
   figure(2);
   mesh(surface_no_mean);
@@ -211,8 +211,13 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
   hist(mean_f)
 
   [res surface_no_mean_ ind] = mbest(train_120_vq, surface_no_mean, m);
+
   indexes(:,1:2) = ind;
-  surface_no_mean_ = surface_no_mean;
+  for f=1:frames
+      surface_no_mean(f,:) = surface_no_mean(f,:) .* vq_bias_i;
+      surface_no_mean_(f,:) = surface_no_mean_(f,:) .* vq_bias_i;
+  end
+  %surface_no_mean_ = surface_no_mean;
 
   for f=1:frames
     surface_no_mean_(f,:) = post_filter(surface_no_mean_(f,:), sample_freqs_kHz, 1.5);
@@ -228,6 +233,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
     %mean_f_ = mean_f(f);
     surface_(f,:) = surface_no_mean_(f,:) + mean_f_;
   end
+  printf("\n")
 
   figure(4);
   mesh(surface_);
@@ -497,10 +503,14 @@ function [model_ voicing_] = model_from_indexes_fbf(indexes)
   energy_q = 10 + 40/16*(0:15);
 
   melvq;
-  load train_120_srf_lb; m=5;
+  load train_120_bias; m=5;
   %load train_k35_vq;
   %load vq_700c_full; m=5;
   %train_120_vq = vq_700c_full;
+
+  max_frq_kHz = max(sample_freqs_kHz);
+  vq_bias = 1-(max_frq_kHz./(max_frq_kHz*-2.5));
+  vq_bias_i = 1./vq_bias;
 
   surface_no_mean_ = zeros(frames,K);
   surface_ = zeros(frames, K);
@@ -516,6 +526,7 @@ function [model_ voicing_] = model_from_indexes_fbf(indexes)
     mean_f_ = energy_q(indexes(f,3)+1);
     surface_(f,:) = surface_no_mean_(f,:) + mean_f_;
 
+    surface_no_mean_(f,:) = surface_no_mean_(f,:) .* vq_bias_i;
     % break into segments of M frames.  We have 2 samples spaced M apart
     % and interpolate the rest.
 
