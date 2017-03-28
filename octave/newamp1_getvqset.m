@@ -20,7 +20,7 @@ function surface_vector = generate_save_training_set(input_prefix, output_prefix
     model = load(model_name);
     [frames nc] = size(model);
     surface_no_mean = rate_K_dec_vq_dump(model);
-    surface_name = strcat(output_prefix,"_vectors.txt");
+    surface_name = strcat(output_prefix,"_vectors.h5");
     save("-hdf5",surface_name,"surface_no_mean")
     surface_vector = surface_no_mean;
 endfunction

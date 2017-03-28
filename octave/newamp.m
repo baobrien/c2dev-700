@@ -178,7 +178,7 @@ function rate_K_sample_freqs_kHz = mel_sample_freqs_kHz(K)
   mel = mel_start:step:mel_end;
   rate_K_sample_freqs_Hz = 700*((10 .^ (mel/2595)) - 1);
   rate_K_sample_freqs_kHz = rate_K_sample_freqs_Hz/1000;
-  rate_K_sample_freqs_kHz = [50 rate_K_sample_freqs_kHz] %Cheating in a low freq. ref to pull up the low end
+  rate_K_sample_freqs_kHz = [0.050 rate_K_sample_freqs_kHz]; %Cheating in a low freq. ref to pull up the low end
 endfunction
 
 

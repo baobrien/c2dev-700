@@ -74,7 +74,7 @@ function surface = newamp1_batch(input_prefix, output_prefix)
   [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
   %[model_ voicing_] = model_from_indexes(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
-  [model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
+  %[model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
   %model_ = experiment_dec_linear(model_);
   %model_ = experiment_energy_rate_linear(model, 1, 0);
@@ -197,18 +197,18 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing)
     surface_no_mean(f,:) = surface(f,:) - mean_f(f);
     b = regress(surface_no_mean(f,:)',sample_freqs_kHz')
     n = sample_freqs_kHz*b;
-    if(b<0)
+    %if(b<0)
         surface_no_mean(f,:) = surface(f,:) - n - mean_f(f);
-    end
+    %end
   end
   figure(2);
   mesh(surface_no_mean);
   figure(5)
   hist(mean_f)
 
-  [res surface_no_mean_ ind] = mbest(train_120_vq, surface_no_mean, m);
-  indexes(:,1:2) = ind;
-  %surface_no_mean_ = surface_no_mean;
+  %[res surface_no_mean_ ind] = mbest(train_120_vq, surface_no_mean, m);
+  %indexes(:,1:2) = ind;
+  surface_no_mean_ = surface_no_mean;
 
   for f=1:frames
     surface_no_mean_(f,:) = post_filter(surface_no_mean_(f,:), sample_freqs_kHz, 1.5);
@@ -388,7 +388,7 @@ function [model_ voicing_] = model_from_indexes(indexes)
   energy_q = 10 + 40/16*(0:15);
 
   melvq;
-  load train_120_srf; m=5;
+  load train_10m_lowf2; m=5;
   %load vq_700c_full; m=5;
   %train_120_vq = vq_700c_full;
 

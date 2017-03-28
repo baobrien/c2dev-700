@@ -21,7 +21,7 @@ function newamp1_fbf(samname, f=10)
   quant_en = 0; pf_en = 0; plot_phase = 1;
   melvq;
 
-  K=20; load train_120_vq; m=5;
+  K=20; load train_10m_lowf2; m=5;
 
   % load up text files dumped from c2sim ---------------------------------------
 
