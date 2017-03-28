@@ -5,6 +5,9 @@
 % This program is distributed under the terms of the GNU General Public License
 % Version 1
 
+pkg load statistics
+
+
 function surface_vector = generate_save_training_set(input_prefix, output_prefix)
     newamp;
     more off;
@@ -42,7 +45,7 @@ function surface_no_mean = rate_K_dec_vq_dump(model)
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
-  K = 20;
+  K = 50;
   [surface sample_freqs_kHz] = resample_const_rate_f_mel(model, K);
   target_surface = surface;
 
