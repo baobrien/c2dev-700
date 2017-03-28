@@ -1,0 +1,37 @@
+# melvq.m
+# David Rowe Aug 2015
+#
+# Experimenting with VQ design for mel LSPs
+
+# todo:
+# [ ] Sorting inside search what happens if we get a order issue, fix and calc SD
+# [ ] Search to avoid a worst case error rather than average?  This could be included
+#     in training.
+# [ ] nested/staged search
+
+
+# train up multi-stage VQ
+# ~/codec2-dev/build_linux/src$ sox -r 8000 -s -2 ../../wav/all.wav -t raw -r 8000 -s -2 - sinc 300 sinc -2600 | ./c2sim - --lpc 6 --lpcpf --lspmel --dump all  -o - | play -t raw -r 8000 -s -2 - vol 3
+#
+# octave:> load ../build_linux/src/all_mel.txt
+# octave:> melvq; vq = trainvq(all_mel, 64, 3);
+# octave:> save vq
+using Clustering
+using HDF5
+
+
+function trainvq(training_data, Nvec, stages)
+    width = size(training_data)[1]
+    vq = zeros(Nvec,width,stages);
+    for i=1:stages
+        R = kmeans(training_data, Nvec);
+        centers = R.centers;
+        idx = R.assignments;
+        quant_error = centers[:,idx] - training_data;
+        mse = mean(std(quant_error));
+        print("mse stage $(i): $(mse)\n");
+        training_data = quant_error;
+        vq[:,:,i] = centers';
+    end
+    return vq;
+end
