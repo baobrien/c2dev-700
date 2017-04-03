@@ -172,7 +172,7 @@ endfunction
 
 
 function rate_K_sample_freqs_kHz = mel_sample_freqs_kHz(K)
-  K-=1
+  K-=1;
   mel_start = ftomel(200); mel_end = ftomel(3700);
   step = (mel_end-mel_start)/(K-1);
   mel = mel_start:step:mel_end;
