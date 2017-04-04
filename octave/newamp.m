@@ -225,9 +225,9 @@ function [rate_K_surface rate_K_sample_freqs_kHz] = resample_const_rate_f(model,
         kk = kk + 1;
     end
 
-    printf("\r resample frame %d of %d", f, frames);
+    %printf("\r resample frame %d of %d", f, frames);
   end
-  printf("\n");
+  %printf("\n");
 endfunction
 
 
@@ -236,7 +236,6 @@ endfunction
 function [model_ AmdB_] = resample_rate_L(model, rate_K_surface, rate_K_sample_freqs_kHz)
   max_amp = 80;
   [frames col] = size(model);
-
   model_ = zeros(frames, max_amp+2);
   for f=1:frames
     Wo = model(f,1);
