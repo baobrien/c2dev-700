@@ -72,8 +72,8 @@ function surface = newamp1_batch(input_prefix, output_prefix)
   %[model_ surface] = experiment_mel_freq(model, 1, 1, voicing);
   %model_ = experiment_dec_abys(model, 8, 1, 1, 1, voicing);
 
-  %[model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing); % encoder/decoder, lets toss away results except for indexes
-  [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
+  [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing); % encoder/decoder, lets toss away results except for indexes
+  %[model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
   %[model_ voicing_] = model_from_indexes(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
   %[model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
@@ -135,8 +135,13 @@ function surface = newamp1_batch(input_prefix, output_prefix)
       % is not used
 
       Hm = zeros(1, 2*max_amp);
+      L
+      Wo
       for m=1:L
         b = round(m*Wo*fft_enc/(2*pi));
+        if(b<1)
+          b=1;
+        end
         Hm(2*m) = cos(phase(b));
         Hm(2*m+1) = -sin(phase(b));
       end
@@ -330,19 +335,26 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
 
   max_amp = 80;
   [frames nc] = size(model);
-  indexes = zeros(frames/M,4);
-  surface = zeros(frames/M,K);
-  Wof = zeros(frames/M);
-  mean_f_i = zeros(frames/M);
+  xframes = floor(frames/M); % Frames at rate 1/M
+  indexes = zeros(xframes,4);
+  surface = zeros(xframes,K);
+  Wof = zeros(xframes);
+  mean_f_i = zeros(xframes);
+  Wo_mean_vec = zeros(xframes,2);
 
   melvq;
   load train_10m_lowf; m=5;
+  load train_10m_ewo;
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
   energy_q = create_energy_q;
+  last_Wo = 0;
+  last_mean = 0;
+  mean_predict = .9;
+  Wo_predict = .8;
   %Do the compression part, frame by frame
-  for fx=1:(frames-1)/M
+  for fx=1:xframes
       f = ((fx-1)*M)+1;
       model_frame = model(f,:);
       [frame_mel sample_kHz] = resample_const_rate_f_mel(model_frame,K);
@@ -356,26 +368,52 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
 
       [res frame_no_mean_ ind] = mbest(train_120_vq, frame_no_mean, m);
       indexes(fx,1:2) = ind;
-      %frame_no_mean_ = frame_no_mean;
+      frame_no_mean_ = frame_no_mean;
       surface(fx,:) = frame_no_mean_;
 
-      [mean_f_ ind] = quantise(energy_q, mean_f);
-      indexes(fx,3) = ind - 1;
-      mean_f_i(fx) = mean_f_;
-      %mean_f_i(fx) = mean_f;
+      mean_p = last_mean * mean_predict;
+      mean_err = mean_p - mean_f;
+      Wo_p = last_Wo * Wo_predict;
+
+    %  Wo_f = 2*pi/100;
+     % if voicing(f)
+      Wo_f = model(f,1);
+      %if Wo_f < pi/160
+    %      Wo_f = pi/160
+      %end
+      %end
+      Wo_f_log = log10(Wo_f);
+      Wo_err = Wo_p - Wo_f_log;
+
+      %Do VQ of mean/Wo here
+      [res Wo_mean_vec_ ind] = mbest(wo_e_vq, [Wo_err,mean_err],m);
+      indexes(fx,3) = ind;
+      %Wo_mean_vec_ = [Wo_err,mean_err];
+
+      Wo_err_ = Wo_mean_vec_(1);
+      mean_err_ = Wo_mean_vec_(2);
+      Wo_mean_vec(fx,:) = [Wo_err_,mean_err_];
+      %Wo_mean_vec(fx)
+      %Update 'last' values to reflect prediction and VQ error
+      last_Wo = Wo_p - Wo_err_;
+      last_mean = mean_p - mean_err_;
+
+      %[mean_f_ ind] = quantise(energy_q, mean_f);
+      %indexes(fx,3) = ind - 1;
+      %mean_f_i(fx) = mean_f_;
+      mean_f_i(fx) = mean_f;
 
       if voicing(f)
-        ind = encode_log_Wo(model(f,1), 6);
-        if ind == 0
-          ind = 1;
-        end
-        indexes(fx,4) = ind;
-        Wof(fx) = decode_log_Wo(indexes(fx,4), 6);
-        %model_(f,1) = decode_log_Wo(indexes(f,4), 6);
+        %ind = encode_log_Wo(model(f,1), 6);
+        %if ind == 0
+        %  ind = 1;
+        %end
+        %indexes(fx,4) = ind;
+        %Wof(fx) = decode_log_Wo(indexes(fx,4), 6);
+        Wof(fx) = model(f,1);
       else
-        indexes(fx,4) = 0;
+        %indexes(fx,4) = 0;
         Wof(fx) = 2*pi/100;
-        %model_(f,1) = 2*pi/100;
       end
       printf("\rEncode frame %d of %d",f,frames);
   end
@@ -383,20 +421,30 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
 
   %% Decoding part
   %
-
-  surface_ = zeros(frames/M,K);
+  surface_ = zeros(xframes,K);
   model_ = zeros(frames, max_amp+3);
   voicing_ = zeros(1, frames);
   interpolated_surface_ = zeros(frames, K);
 
+  Wo_last_ = 0;
+  mean_last_ = 0;
+
   %Post filter the surface
-  for fx=1:(frames-1)/M
+  for  fx=1:xframes
+      mean_p = mean_last_ * mean_predict;
+      mean_f_ = mean_p - Wo_mean_vec(fx,2);
+      mean_last_ = mean_f_;
       surface_(fx,:) = post_filter(surface(fx,:), sample_kHz, 1.5);
-      surface_(fx,:) = surface_(fx,:) + mean_f_i(fx);
-      mean_f_i(fx)
+      surface_(fx,:) = surface_(fx,:) + mean_f_;
   end
 
-  for fx=1:(frames-1)/M
+  figure(1)
+  scatter(Wo_mean_vec(:,1),Wo_mean_vec(:,2))
+  ylabel("Energy error")
+  xlabel("Pitch error")
+
+  for fx=1:(xframes-1)
+    %fx = (f-1)/M+1;
     f = ((fx-1)*M)+1;
 
     left_vec = surface_(fx,:);
@@ -407,8 +455,15 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       interpolated_surface_(resample_points,k) = interp_linear(sample_points, [left_vec(k) right_vec(k)], resample_points);
     end
 
-    Wo1_ = Wof(fx);
-    Wo2_ = Wof(fx+1);
+    %Un-predict and subtract error
+    Wo_p_1 = Wo_last_ * Wo_predict;
+    Wo1_ =  Wo_p_1 - Wo_mean_vec(fx,1);
+    Wo_last_ = Wo1_;
+    Wo_p_2 = Wo_last_ * Wo_predict;
+    Wo2_ = Wo_p_2 - Wo_mean_vec(fx+1,1);
+
+    Wo1_ = 10 .^ Wo1_;
+    Wo2_ = 10 .^ Wo2_;
 
     % uncomment to use unquantised values
     %Wo1_ = model(f,1);
@@ -439,10 +494,11 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
     printf("\rDecode frame %d of %d",f,frames);
   end
   printf("\n");
+
   %%
   %%
   %%
-  model_(frames-M-1:frames,1) = pi/100; % set end frames to something sensible
+  model_(frames-M-2:frames,1) = pi/100; % set end frames to something sensible
 
   % enable these to use original (non interpolated) voicing and Wo
   %voicing_ = voicing;
@@ -450,7 +506,6 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
 
   model_(:,2) = floor(pi ./ model_(:,1)); % calculate L for each interpolated Wo
   model_ = resample_rate_L(model_, interpolated_surface_, sample_kHz);
-  model(101,:)
 
 endfunction
 
