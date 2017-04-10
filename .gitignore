@@ -1,4 +1,4 @@
 octave/octave-workspace
 octave-workspace
-audio-test/*
-build-linux/*
+/audio-test/
+/build-linux/
