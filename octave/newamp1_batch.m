@@ -352,8 +352,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   energy_q = create_energy_q;
   last_Wo = 0;
   last_mean = 0;
-  mean_predict = .7;
-  Wo_predict = .4;
+  mean_predict = .95;
+  Wo_predict = .9;
   %Do the compression part, frame by frame
   for fx=1:xframes
       f = ((fx-1)*M)+1;
@@ -379,12 +379,16 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
     %  Wo_f = 2*pi/100;
      % if voicing(f)
       Wo_f = model(f,1);
-      if Wo_f < pi/160
-          Wo_f = pi/160
+      %if Wo_f < pi/160
+    %      Wo_f = pi/160
+     % end
+      %end
+      %end
+      Wo_f = Wo_f - 2*pi*(50/8000) + 1;
+      if Wo_f < 1
+          Wo_f = 1
       end
-      %end
-      %end
-      Wo_f_log = log10(Wo_f);
+      Wo_f_log = log2(Wo_f);
       Wo_err = Wo_p - Wo_f_log;
 
       %Do VQ of mean/Wo here
@@ -470,8 +474,17 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
     Wo_p_2 = Wo_last_ * Wo_predict;
     Wo2_ = Wo_p_2 - Wo_mean_vec(fx+1,1);
 
-    Wo1_ = 10 .^ Wo1_;
-    Wo2_ = 10 .^ Wo2_;
+    Wo1_ = 2 .^ Wo1_;
+    Wo2_ = 2 .^ Wo2_;
+    Wo1_ = Wo1_ - 1 + 2*pi*(50/8000);
+    Wo2_ = Wo2_ - 1 + 2*pi*(50/8000);
+
+    if Wo1_ < 2*pi/160
+        Wo1_ = 2*pi/160
+    end
+    if Wo2_ < 2*pi/160
+        Wo2_ = 2*pi/160
+    end
 
     % uncomment to use unquantised values
     %Wo1_ = model(f,1);

@@ -104,8 +104,8 @@ function [surface Wo_mean_vec] = experiment_rate_K_dec_xfbf(model,voicing)
   energy_q = create_energy_q;
   last_Wo = 0;
   last_mean = 0;
-  mean_predict = .9;
-  Wo_predict = .8;
+  mean_predict = .95;
+  Wo_predict = .9;
   %Do the compression part, frame by frame
   for fx=1:xframes
       f = ((fx-1)*M)+1;
@@ -132,7 +132,12 @@ function [surface Wo_mean_vec] = experiment_rate_K_dec_xfbf(model,voicing)
       %if voicing(f)
         Wo_f = model(f,1);
       %end
-      Wo_f_log = log10(Wo_f);
+      %Offset by 50Hz
+      Wo_f = Wo_f - 2*pi*(50/8000) + 1;
+      if Wo_f < 1
+          Wo_f = 1
+      end
+      Wo_f_log = log2(Wo_f);
       Wo_err = Wo_p - Wo_f_log;
 
       %Do VQ of mean/Wo here
@@ -164,10 +169,10 @@ function [surface Wo_mean_vec] = experiment_rate_K_dec_xfbf(model,voicing)
       printf("\rEncode frame %d of %d",f,frames);
   end
   Wo_mean_vec_t = Wo_mean_vec;
-  Wo_mean_vec_t(:,1) = Wo_mean_vec_t(:,1).*80;
+  Wo_mean_vec_t(:,1) = Wo_mean_vec_t(:,1).*400;
   wo_e_vq = trainvq(Wo_mean_vec_t,2**9,1);
-  wo_e_vq(:,1) = wo_e_vq(:,1).*(1/80);
-
+  wo_e_vq(:,1) = wo_e_vq(:,1).*(1/400);
+  save('train_10m_ewo','wo_e_vq')
   figure(1)
   clf
   hold on
