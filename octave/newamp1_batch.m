@@ -341,6 +341,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   Wof = zeros(xframes);
   mean_f_i = zeros(xframes);
   Wo_mean_vec = zeros(xframes,2);
+  Wo_mean_vec_noq = zeros(xframes,2);
 
   melvq;
   load train_10m_lowf; m=5;
@@ -351,8 +352,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   energy_q = create_energy_q;
   last_Wo = 0;
   last_mean = 0;
-  mean_predict = .9;
-  Wo_predict = .8;
+  mean_predict = .7;
+  Wo_predict = .4;
   %Do the compression part, frame by frame
   for fx=1:xframes
       f = ((fx-1)*M)+1;
@@ -378,8 +379,9 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
     %  Wo_f = 2*pi/100;
      % if voicing(f)
       Wo_f = model(f,1);
-      %if Wo_f < pi/160
-    %      Wo_f = pi/160
+      if Wo_f < pi/160
+          Wo_f = pi/160
+      end
       %end
       %end
       Wo_f_log = log10(Wo_f);
@@ -393,6 +395,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       Wo_err_ = Wo_mean_vec_(1);
       mean_err_ = Wo_mean_vec_(2);
       Wo_mean_vec(fx,:) = [Wo_err_,mean_err_];
+      Wo_mean_vec_noq(fx,:) = [Wo_err,mean_err];
+
       %Wo_mean_vec(fx)
       %Update 'last' values to reflect prediction and VQ error
       last_Wo = Wo_p - Wo_err_;
@@ -419,6 +423,15 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   end
   printf("\n");
 
+
+  figure(1)
+  clf
+  hold on
+  scatter(Wo_mean_vec(:,1),Wo_mean_vec(:,2))
+  scatter(Wo_mean_vec_noq(:,1),Wo_mean_vec_noq(:,2),'r')
+  ylabel("Energy error")
+  xlabel("Pitch error")
+
   %% Decoding part
   %
   surface_ = zeros(xframes,K);
@@ -437,11 +450,6 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       surface_(fx,:) = post_filter(surface(fx,:), sample_kHz, 1.5);
       surface_(fx,:) = surface_(fx,:) + mean_f_;
   end
-
-  figure(1)
-  scatter(Wo_mean_vec(:,1),Wo_mean_vec(:,2))
-  ylabel("Energy error")
-  xlabel("Pitch error")
 
   for fx=1:(xframes-1)
     %fx = (f-1)/M+1;

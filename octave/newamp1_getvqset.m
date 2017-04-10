@@ -165,7 +165,7 @@ function [surface Wo_mean_vec] = experiment_rate_K_dec_xfbf(model,voicing)
   end
   Wo_mean_vec_t = Wo_mean_vec;
   Wo_mean_vec_t(:,1) = Wo_mean_vec_t(:,1).*80;
-  wo_e_vq = trainvq(Wo_mean_vec_t,2**8,1);
+  wo_e_vq = trainvq(Wo_mean_vec_t,2**9,1);
   wo_e_vq(:,1) = wo_e_vq(:,1).*(1/80);
 
   figure(1)
