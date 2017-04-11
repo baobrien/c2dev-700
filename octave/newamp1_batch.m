@@ -72,8 +72,8 @@ function surface = newamp1_batch(input_prefix, output_prefix)
   %[model_ surface] = experiment_mel_freq(model, 1, 1, voicing);
   %model_ = experiment_dec_abys(model, 8, 1, 1, 1, voicing);
 
-  %[model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing); % encoder/decoder, lets toss away results except for indexes
-  [model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
+  [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing); % encoder/decoder, lets toss away results except for indexes
+  %[model_ voicing_ indexes] = experiment_rate_K_dec(model, voicing); % encoder/decoder, lets toss away results except for indexes
   %[model_ voicing_] = model_from_indexes(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
 
   %[model_ voicing_] = model_from_indexes_fbf(indexes);                   % decoder uses just indexes, outputs vecs for synthesis
@@ -325,13 +325,13 @@ endfunction
 
 function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   M = 4; % model frame -> wire frame decimation rate 10ms->40ms
-  MP = 2; % Multi frame packing rate
+  MP = M/2; % Multi frame packing rate
   K = 20;
 
   max_amp = 80;
   [frames nc] = size(model);
   indexes = zeros(frames/M,4);
-  surface = zeros(frames/M,K);
+  surface = zeros(frames/M,K*2);
   Wof = zeros(frames/M);
   mean_f_i = zeros(frames/M);
 
@@ -342,23 +342,42 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
 
   energy_q = create_energy_q;
   %Do the compression part, frame by frame
+
   for fx=1:(frames-1)/M
       f = ((fx-1)*M)+1;
-      model_frame = model(f,:);
-      [frame_mel sample_kHz] = resample_const_rate_f_mel(model_frame,K);
-      %Calculate and remove mean (in dB)
-      mean_f = mean(frame_mel);
-      frame_no_mean = frame_mel - mean_f;
-      %Remove overall slope
-      b = regress(frame_no_mean',sample_kHz');
-      n = sample_kHz*b;
-      frame_no_mean = frame_mel - n - mean_f;
+      model_frame_a = model(f,:);
+      model_frame_b = model(f+MP,:);
+      [frame_mel_a sample_kHz] = resample_const_rate_f_mel(model_frame_a,K);
+      [frame_mel_b sample_kHz] = resample_const_rate_f_mel(model_frame_b,K);
 
-      [res frame_no_mean_ ind] = mbest(train_120_vq, frame_no_mean, m);
-      indexes(fx,1:2) = ind;
-      %frame_no_mean_ = frame_no_mean;
+      %Calculate and remove mean (in dB)
+      mean_f_a = mean(frame_mel_a);
+      frame_no_mean_a = frame_mel_a - mean_f_a;
+      %Remove overall slope
+      b = regress(frame_no_mean_a',sample_kHz');
+      n = sample_kHz*b;
+      frame_mel2_a = frame_no_mean_a - n;
+      frame_no_mean_a = frame_mel2_a - mean_f_a;
+
+      %Calculate and remove mean (in dB) from middle frame
+      mean_f_b = mean(frame_mel_b);
+      frame_no_mean_b = frame_mel_b - mean_f_b;
+      %Remove overall slope
+      b = regress(frame_no_mean_b',sample_kHz');
+      n = sample_kHz*b;
+      frame_mel2_b = frame_mel_b - n;
+
+      %Take delta of frame
+      frame_b_dt = frame_mel2_a - frame_mel2_b;
+
+      frame_no_mean = [frame_no_mean_a frame_b_dt];
+
+      %[res frame_no_mean_ ind] = mbest(train_120_vq, frame_no_mean, m);
+      %indexes(fx,1:2) = ind;
+      frame_no_mean_ = frame_no_mean;
       surface(fx,:) = frame_no_mean_;
 
+      mean_f = mean_f_a; %Take the mean from the frist frame
       [mean_f_ ind] = quantise(energy_q, mean_f);
       indexes(fx,3) = ind - 1;
       mean_f_i(fx) = mean_f_;
@@ -381,31 +400,48 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   end
   printf("\n");
 
+  figure(1)
+  mesh(surface)
   %% Decoding part
   %
 
-  surface_ = zeros(frames/M,K);
+  surface_ = zeros(frames/M,K*2);
   model_ = zeros(frames, max_amp+3);
   voicing_ = zeros(1, frames);
   interpolated_surface_ = zeros(frames, K);
 
   %Post filter the surface
   for fx=1:(frames-1)/M
-      surface_(fx,:) = post_filter(surface(fx,:), sample_kHz, 1.5);
-      surface_(fx,:) = surface_(fx,:) + mean_f_i(fx);
-      mean_f_i(fx)
+      srf_a = surface(fx,[1:K]);
+      srf_b = surface(fx,[K+1:K*2]);
+      srf_a = post_filter(srf_a, sample_kHz, 1.5);
+      srf_b = post_filter(srf_a + srf_b, sample_kHz, 1.5);
+      surface_(fx,[1:K]) = srf_a + mean_f_i(fx);
+      surface_(fx,[K+1:K*2]) = srf_b + mean_f_i(fx);
   end
+
+  figure(2)
+  mesh(surface)
 
   for fx=1:(frames-1)/M
     f = ((fx-1)*M)+1;
 
-    left_vec = surface_(fx,:);
-    right_vec = surface_(fx+1,:);
-    sample_points = [f f+M];
-    resample_points = f:f+M-1;
-    for k=1:K
-      interpolated_surface_(resample_points,k) = interp_linear(sample_points, [left_vec(k) right_vec(k)], resample_points);
-    end
+    frame_a = surface_(fx,[1:K])
+    frame_b = surface_(fx,[K+1:K*2])
+    frame_c = surface_(fx+1,[1:K])
+
+    %left_vec = surface_(fx,:);
+    %right_vec = surface_(fx+1,:);
+    %sample_points_l = [f f+MP];
+    %resample_points_l = f:f+MP-1;
+    %sample_points_r = sample_points_l+MP;
+    %resample_points_r = resample_points_l+MP;
+    %for k=1:K
+    %  interpolated_surface_(resample_points_l,k) = interp_linear(sample_points_l, [frame_a(k) frame_b(k)], resample_points_l);
+    %  interpolated_surface_(resample_points_r,k) = interp_linear(sample_points_r, [frame_b(k) frame_c(k)], resample_points_r);
+    %end
+
+    
 
     Wo1_ = Wof(fx);
     Wo2_ = Wof(fx+1);
