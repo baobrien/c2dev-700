@@ -35,3 +35,9 @@ function trainvq(training_data, Nvec, stages)
     end
     return vq;
 end
+
+function load_train_save(training_file,vec_name,vqset_file,Nvec,stages)
+    training_data = h5read(training_file,vec_name)["value"];
+    vq = trainvq(training_data',Nvec,stages);
+    h5write(vqset_file,"train_120_vq",vq);
+end
