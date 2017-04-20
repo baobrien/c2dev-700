@@ -172,9 +172,9 @@ endfunction
 % quantisation.  Evolved from abys decimator below.  Simulates the entire encoder/decoder.
 
 function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
-  M = 4; % model frame -> wire frame decimation rate 10ms->40ms
+  M = 2; % model frame -> wire frame decimation rate 10ms->40ms
   MP = 2; % Multi frame packing rate
-  K = 20;
+  K = 40;
   max_amp = 80;
   [frames nc] = size(model);
   xframes = floor(frames/M);
@@ -188,7 +188,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   frame_last = zeros(1,K);
 
   melvq;
-  load train_10m_sp2; m=5;
+  load train_10m_2400x; m=5;
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
@@ -224,12 +224,12 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       %mean_f_i(fx) = mean_f;
 
       if voicing(f)
-        ind = encode_log_Wo(model(f,1), 6);
+        ind = encode_log_Wo(model(f,1), 8);
         if ind == 0
           ind = 1;
         end
         indexes(fx,4) = ind;
-        Wof(fx) = decode_log_Wo(indexes(fx,4), 6);
+        Wof(fx) = decode_log_Wo(indexes(fx,4), 8);
         %model_(f,1) = decode_log_Wo(indexes(f,4), 6);
       else
         indexes(fx,4) = 0;

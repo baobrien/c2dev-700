@@ -29,15 +29,15 @@ endfunction
 
 
 function surface = rate_K_dec_vq_dump_xfbf(model)
-    M = 4; % model frame -> wire frame decimation rate 10ms->40ms
-    K = 20;
+    M = 2; % model frame -> wire frame decimation rate 10ms->40ms
+    K = 40;
 
     max_amp = 80;
     [frames nc] = size(model);
     xframes = floor(frames/M)
     surface = zeros(xframes,K);
-    Wof = zeros(xframes);
-    mean_f_i = zeros(xframes);
+    Wof = zeros(1,xframes);
+    mean_f_i = zeros(1,xframes);
 
     %Surface prediction coeffecient
     coeff_surface_pred = .8;
