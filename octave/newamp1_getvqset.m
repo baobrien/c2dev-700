@@ -30,7 +30,7 @@ endfunction
 
 function surface = rate_K_dec_vq_dump_xfbf(model)
     M = 4; % model frame -> wire frame decimation rate 10ms->40ms
-    K = 35;
+    K = 20;
 
     max_amp = 80;
     [frames nc] = size(model);
@@ -39,37 +39,41 @@ function surface = rate_K_dec_vq_dump_xfbf(model)
     Wof = zeros(xframes);
     mean_f_i = zeros(xframes);
 
+    %Surface prediction coeffecient
+    coeff_surface_pred = .8;
+    frame_last = zeros(1,K);
     melvq;
     % create frames x K surface.  TODO make all of this operate frame by
     % frame, or at least M/2=4 frames rather than one big chunk
 
-    energy_q = create_energy_q;
     %Do the compression part, frame by frame
-
-    for fx=1:xframes
+    for fx = 1:xframes
         f = ((fx-1)*M)+1;
-        model_frame_a = model(f,:);
-        [frame_mel_a sample_kHz] = resample_const_rate_f_mel(model_frame_a,K);
-
+        model_frame = model(f,:);
+        [frame_mel sample_kHz] = resample_const_rate_f_mel(model_frame,K);
         %Calculate and remove mean (in dB)
-        mean_f_a = mean(frame_mel_a);
-        frame_no_mean_a = frame_mel_a - mean_f_a;
+        mean_f = mean(frame_mel);
+        frame_no_mean = frame_mel - mean_f;
         %Remove overall slope
-        b = regress(frame_no_mean_a',sample_kHz');
+        b = regress(frame_no_mean',sample_kHz');
         n = sample_kHz*b;
-        frame_mel2_a = frame_mel_a - n;
-        frame_no_mean_a = frame_mel2_a - mean_f_a;
 
-        frame_no_mean = frame_no_mean_a;
+        %Not removing or regenerating mean for this test
+        frame_no_slope = frame_mel ;
+        %Figure out what the other side expects this frame to look like
+        frame_pred = frame_last .* coeff_surface_pred;
+        frame_resid = frame_no_slope - frame_pred;
 
-        %[res frame_no_mean_ ind] = mbest(train_120_vq, frame_no_mean, m);
-        %indexes(fx,1:2) = ind;
-        frame_no_mean_ = frame_no_mean;
-        surface(fx,:) = frame_no_mean_;
+        %[res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
 
-        printf("\rEncode frame %d of %d",f,frames);
+        frame_resid_ = frame_resid;
+        surface(fx,:) = frame_resid_;
+        frame_last = frame_pred + frame_resid_;
+
+        printf("\rEncode frame %d of %d (%d/%d)",f,frames,fx,xframes);
     end
     printf("\n");
+
 endfunction
 
  % -----------------------------------------------------------------------------------------

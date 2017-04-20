@@ -174,17 +174,21 @@ endfunction
 function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   M = 4; % model frame -> wire frame decimation rate 10ms->40ms
   MP = 2; % Multi frame packing rate
-  K = 35;
+  K = 20;
   max_amp = 80;
   [frames nc] = size(model);
-  xframes = frames/M;
+  xframes = floor(frames/M);
   indexes = zeros(xframes,4);
   surface = zeros(xframes,K);
   Wof = zeros(xframes);
   mean_f_i = zeros(xframes);
 
+  %Surface prediction coeffecient
+  coeff_surface_pred = .8;
+  frame_last = zeros(1,K);
+
   melvq;
-  load train_10m_lowf; m=5;
+  load train_10m_sp2; m=5;
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
@@ -200,16 +204,23 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       %Remove overall slope
       b = regress(frame_no_mean',sample_kHz');
       n = sample_kHz*b;
-      frame_no_mean = frame_mel - mean_f;
 
-      [res frame_no_mean_ ind] = mbest(train_120_vq, frame_no_mean, m);
-      indexes(fx,1:2) = ind;
-      %frame_no_mean_ = frame_no_mean;
-      surface(fx,:) = frame_no_mean_;
+      %Not removing or regenerating mean for this test
+      frame_no_slope = frame_mel;
+      %Figure out what the other side expects this frame to look like
 
-      [mean_f_ ind] = quantise(energy_q, mean_f);
-      indexes(fx,3) = ind - 1;
-      mean_f_i(fx) = mean_f_;
+      frame_pred = frame_last .* coeff_surface_pred;
+      frame_resid = frame_no_slope - frame_pred;
+
+      [res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
+      %indexes(fx,1:2) = ind;
+      %frame_resid_ = frame_resid;
+      surface(fx,:) = frame_resid_;
+      frame_last = frame_pred + frame_resid_;
+
+      %[mean_f_ ind] = quantise(energy_q, mean_f);
+      %indexes(fx,3) = ind - 1;
+      %mean_f_i(fx) = mean_f_;
       %mean_f_i(fx) = mean_f;
 
       if voicing(f)
@@ -237,10 +248,15 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   voicing_ = zeros(1, frames);
   interpolated_surface_ = zeros(frames, K);
 
-  %Post filter the surface
+  %Reconstruct and post-filter the surface
+  frame_last = zeros(1,K);
   for fx = 1:xframes
-      surface_(fx,:) = post_filter(surface(fx,:), sample_kHz, 1.5);
-      surface_(fx,:) = surface_(fx,:) + mean_f_i(fx);
+      frame_pred = frame_last .* coeff_surface_pred;
+      frame_ = surface(fx,:) + frame_pred;
+      frame_last = frame_;
+      f_mean = mean(frame_);
+      surface_(fx,:) = post_filter(frame_ - f_mean, sample_kHz, 1.5)+f_mean;
+      %surface_(fx,:) = surface_(fx,:) + mean_f_i(fx);
   end
 
   for fx = 1:xframes-1
@@ -289,7 +305,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   %%
   %%
   %%
-  model_(frames-M-1:frames,1) = pi/100; % set end frames to something sensible
+  model_(frames-M-2:frames,1) = pi/100; % set end frames to something sensible
 
   % enable these to use original (non interpolated) voicing and Wo
   %voicing_ = voicing;
