@@ -174,14 +174,14 @@ endfunction
 function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   M = 4; % model frame -> wire frame decimation rate 10ms->40ms
   MP = 2; % Multi frame packing rate
-  K = 20;
+  K = 50;
   max_amp = 80;
   [frames nc] = size(model);
   xframes = floor(frames/M);
   indexes = zeros(xframes,4);
   surface = zeros(xframes,K);
-  Wof = zeros(xframes);
-  mean_f_i = zeros(xframes);
+  Wof = zeros(1,xframes);
+  mean_f_i = zeros(1,xframes);
 
   %Surface prediction coeffecient
   coeff_surface_pred = .8;
@@ -212,11 +212,11 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       frame_pred = frame_last .* coeff_surface_pred;
       frame_resid = frame_no_slope - frame_pred;
 
-      [res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
+      frame_resid_ = frame_resid;
+      %[res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
       %indexes(fx,1:2) = ind;
-      %frame_resid_ = frame_resid;
       surface(fx,:) = frame_resid_;
-      frame_last = frame_pred + frame_resid_;
+      frame_last = frame_pred + frame_resid;
 
       %[mean_f_ ind] = quantise(energy_q, mean_f);
       %indexes(fx,3) = ind - 1;
@@ -230,6 +230,7 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
         end
         indexes(fx,4) = ind;
         Wof(fx) = decode_log_Wo(indexes(fx,4), 6);
+        Wof(fx) = model(f,1);
         %model_(f,1) = decode_log_Wo(indexes(f,4), 6);
       else
         indexes(fx,4) = 0;
@@ -255,7 +256,8 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       frame_ = surface(fx,:) + frame_pred;
       frame_last = frame_;
       f_mean = mean(frame_);
-      surface_(fx,:) = post_filter(frame_ - f_mean, sample_kHz, 1.5)+f_mean;
+      surface_(fx,:) = frame_;
+      %surface_(fx,:) = post_filter(frame_ - f_mean, sample_kHz, 1.5)+f_mean;
       %surface_(fx,:) = surface_(fx,:) + mean_f_i(fx);
   end
 

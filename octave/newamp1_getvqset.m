@@ -68,7 +68,7 @@ function surface = rate_K_dec_vq_dump_xfbf(model)
 
         frame_resid_ = frame_resid;
         surface(fx,:) = frame_resid_;
-        frame_last = frame_pred + frame_resid_;
+        frame_last = frame_pred + frame_resid;
 
         printf("\rEncode frame %d of %d (%d/%d)",f,frames,fx,xframes);
     end
