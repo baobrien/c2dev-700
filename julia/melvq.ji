@@ -38,6 +38,24 @@ end
 
 function load_train_save(training_file,vec_name,vqset_file,Nvec,stages)
     training_data = h5read(training_file,vec_name)["value"];
-    vq = trainvq(training_data',Nvec,stages);
+
+    train_bias_end = 1;
+    k = size(training_data)[2]
+    bias_vec = 1:k;
+    bias_vec = collect(1-((bias_vec-1) * (train_bias_end/(k-1))));
+    bias_vec_inv = 1./bias_vec;
+    training_data = training_data';
+
+
+    for i=1:size(training_data)[2]
+        training_data[:,i] = training_data[:,i] .* bias_vec;
+    end
+    vq = trainvq(training_data,Nvec,stages);
+    print("$(size(vq))")
+    for ii = 1:size(vq)[3]
+        for jj = 1:size(vq)[1]
+            vq[jj,:,ii] = vq[jj,:,ii] .* bias_vec_inv';
+        end
+    end
     h5write(vqset_file,"train_120_vq",vq);
 end
