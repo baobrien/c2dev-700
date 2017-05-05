@@ -166,7 +166,6 @@ function surface = newamp1_batch(input_prefix, output_prefix)
 endfunction
 
 
-
 % -----------------------------------------------------------------------------------------
 % Linear decimator/interpolator that operates at rate K, includes VQ, post filter, and Wo/E
 % quantisation.  Evolved from abys decimator below.  Simulates the entire encoder/decoder.
@@ -174,7 +173,7 @@ endfunction
 function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   M = 4; % model frame -> wire frame decimation rate 10ms->40ms
   MP = 2; % Multi frame packing rate
-  K = 50;
+  K = 20;
   max_amp = 80;
   [frames nc] = size(model);
   xframes = floor(frames/M);
@@ -184,11 +183,11 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
   mean_f_i = zeros(1,xframes);
 
   %Surface prediction coeffecient
-  coeff_surface_pred = .8;
+  coeff_surface_pred = .95;
   frame_last = zeros(1,K);
 
   melvq;
-  load train_10m_sp2; m=5;
+  load train_10m_sp_p95; m=5;
   % create frames x K surface.  TODO make all of this operate frame by
   % frame, or at least M/2=4 frames rather than one big chunk
 
@@ -212,11 +211,11 @@ function [model_ voicing_ indexes] = experiment_rate_K_dec_xfbf(model, voicing)
       frame_pred = frame_last .* coeff_surface_pred;
       frame_resid = frame_no_slope - frame_pred;
 
-      frame_resid_ = frame_resid;
-      %[res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
+      %frame_resid_ = frame_resid;
+      [res frame_resid_ ind] = mbest(train_120_vq, frame_resid, m);
       %indexes(fx,1:2) = ind;
       surface(fx,:) = frame_resid_;
-      frame_last = frame_pred + frame_resid;
+      frame_last = frame_pred + frame_resid_;
 
       %[mean_f_ ind] = quantise(energy_q, mean_f);
       %indexes(fx,3) = ind - 1;

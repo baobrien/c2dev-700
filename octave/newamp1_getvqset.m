@@ -40,7 +40,7 @@ function surface = rate_K_dec_vq_dump_xfbf(model)
     mean_f_i = zeros(xframes);
 
     %Surface prediction coeffecient
-    coeff_surface_pred = .8;
+    coeff_surface_pred = .6;
     frame_last = zeros(1,K);
     melvq;
     % create frames x K surface.  TODO make all of this operate frame by
